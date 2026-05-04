@@ -1,0 +1,2557 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Heridas Tempranas — Un mapa para conocerte</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --paper: #f4ede0;
+  --paper-warm: #ebe2d0;
+  --paper-shadow: #e0d4ba;
+  --ink: #1f2024;
+  --ink-soft: #3a3b42;
+  --ink-faint: #b8ad94;
+  --cobalt: #2854a8;
+  --cobalt-soft: #4a72c0;
+  --vermillion: #c83c20;
+  --vermillion-soft: #d8634a;
+  --ochre: #d9a52a;
+  --ochre-soft: #e6bc55;
+  --emerald: #2d7548;
+  --emerald-soft: #4a9165;
+  --plum: #7a3458;
+  --plum-soft: #985878;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(ellipse at 20% 15%, rgba(40,84,168,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 85%, rgba(200,60,32,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 30%, rgba(217,165,42,0.05) 0%, transparent 45%);
+  color: var(--ink);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  padding: 32px 20px 80px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 0;
+  background-image:
+    radial-gradient(0.5px 0.5px at 10% 20%, rgba(31,32,36,0.08), transparent),
+    radial-gradient(0.5px 0.5px at 80% 60%, rgba(31,32,36,0.06), transparent),
+    radial-gradient(0.5px 0.5px at 30% 70%, rgba(31,32,36,0.07), transparent),
+    radial-gradient(0.5px 0.5px at 60% 40%, rgba(31,32,36,0.05), transparent),
+    radial-gradient(0.5px 0.5px at 90% 90%, rgba(31,32,36,0.06), transparent);
+  opacity: 0.6;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 0;
+}
+
+.scribble-bg {
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.35;
+}
+.scribble-bg.s1 { top: 8%; left: 5%; }
+.scribble-bg.s2 { top: 25%; right: 4%; }
+.scribble-bg.s3 { bottom: 30%; left: 3%; }
+.scribble-bg.s4 { bottom: 15%; right: 6%; }
+.scribble-bg.s5 { top: 55%; left: 8%; }
+.scribble-bg.s6 { top: 70%; right: 10%; }
+
+.container { max-width: 660px; width: 100%; position: relative; z-index: 1; }
+
+/* ── NAV ── */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 36px;
+  gap: 8px;
+}
+.nav-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px; font-weight: 600;
+  font-style: italic;
+  color: var(--ink);
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer;
+}
+.nav-logo-mark {
+  width: 22px; height: 22px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.nav-tabs {
+  display: flex; gap: 2px;
+  background: transparent;
+  border: 1.5px solid var(--ink);
+  border-radius: 0;
+  padding: 3px;
+}
+.nav-tab {
+  background: transparent;
+  border: none;
+  padding: 7px 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px; letter-spacing: 1.8px;
+  font-weight: 600; text-transform: uppercase;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.nav-tab.active {
+  background: var(--ink);
+  color: var(--paper);
+}
+.nav-tab:hover:not(.active) { color: var(--ink); }
+
+/* ── SHARED ── */
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--ink-soft); font-weight: 600;
+  font-family: 'Inter', sans-serif;
+}
+.eyebrow-line {
+  width: 24px; height: 1px;
+  background: var(--ink-soft);
+}
+
+.btn-primary {
+  background: var(--ink); color: var(--paper);
+  font-family: 'Inter', sans-serif;
+  font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase; font-weight: 600;
+  border: none; padding: 17px 40px;
+  border-radius: 0;
+  cursor: pointer; transition: all 0.25s;
+  display: inline-flex; align-items: center; gap: 12px;
+  position: relative;
+}
+.btn-primary:hover { background: var(--ink-soft); transform: translate(-2px,-2px); box-shadow: 4px 4px 0 var(--ink-faint); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-primary:disabled:hover { background: var(--ink); transform: none; box-shadow: none; }
+.btn-primary .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ochre); flex-shrink: 0; }
+
+.btn-ghost {
+  background: transparent; border: 1.5px solid var(--ink);
+  color: var(--ink); font-family: 'Inter', sans-serif;
+  font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600;
+  padding: 13px 26px; border-radius: 0; cursor: pointer; transition: all 0.25s;
+}
+.btn-ghost:hover { background: var(--ink); color: var(--paper); }
+
+.btn-back {
+  background: transparent; border: 1.5px solid var(--ink-faint);
+  color: var(--ink-soft); font-family: 'Inter', sans-serif;
+  font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600;
+  padding: 8px 14px; border-radius: 0; cursor: pointer; transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-back:hover { border-color: var(--ink); color: var(--ink); }
+
+/* ── INTRO ── */
+.intro { animation: fadeUp 0.7s ease both; }
+.intro-mark {
+  display: flex; justify-content: center;
+  margin-bottom: 24px;
+}
+.intro h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(38px, 9vw, 60px);
+  font-weight: 500;
+  font-style: italic;
+  color: var(--ink); line-height: 1.05;
+  text-align: center;
+  margin-bottom: 4px;
+  letter-spacing: -0.5px;
+}
+.intro h1 .accent {
+  font-style: normal;
+  font-weight: 600;
+  position: relative;
+  display: inline-block;
+}
+.intro h1 .accent::after {
+  content: '';
+  position: absolute;
+  left: -2px; right: -2px;
+  bottom: 4px; height: 8px;
+  background: var(--ochre);
+  z-index: -1;
+  opacity: 0.5;
+  transform: skewX(-3deg);
+}
+.intro-eyebrow-wrap {
+  display: flex; justify-content: center;
+  margin-bottom: 18px;
+}
+.intro-subtitle {
+  font-size: 16px; line-height: 1.65;
+  color: var(--ink-soft);
+  max-width: 480px; margin: 16px auto 36px;
+  text-align: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 19px;
+}
+
+.intro-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px; margin: 0 0 32px; text-align: left;
+}
+.intro-tile {
+  background: rgba(255,253,247,0.6);
+  border: 1.5px solid var(--ink);
+  padding: 18px 18px 16px;
+  position: relative;
+}
+.intro-tile-mark {
+  position: absolute;
+  top: -10px; left: 14px;
+  background: var(--paper);
+  padding: 0 8px;
+}
+.intro-tile-label {
+  font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--ink-soft); font-weight: 700;
+  margin-bottom: 10px;
+  font-family: 'Inter', sans-serif;
+}
+.intro-tile p {
+  font-size: 13px; line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.intro-cta-wrap {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 14px;
+}
+
+/* ── ONBOARDING (name + gender) ── */
+.onboarding {
+  animation: fadeUp 0.5s ease both;
+}
+.onboarding-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.onboarding-header h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(28px, 6vw, 38px);
+  font-weight: 500;
+  font-style: italic;
+  color: var(--ink);
+  line-height: 1.15;
+  margin-bottom: 10px;
+}
+.onboarding-header p {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px;
+  font-style: italic;
+  color: var(--ink-soft);
+  max-width: 440px;
+  margin: 12px auto 0;
+  line-height: 1.5;
+}
+.onboarding-block {
+  background: rgba(255,253,247,0.6);
+  border: 1.5px solid var(--ink);
+  padding: 28px 26px;
+  margin-bottom: 20px;
+  position: relative;
+}
+.onboarding-block::before {
+  content: '';
+  position: absolute;
+  top: -1.5px; left: -1.5px; width: 28px; height: 28px;
+  border-top: 4px solid var(--ochre);
+  border-left: 4px solid var(--ochre);
+}
+.onboarding-label {
+  font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--ink-soft); font-weight: 700;
+  margin-bottom: 14px;
+  font-family: 'Inter', sans-serif;
+}
+.onboarding-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid var(--ink-faint);
+  padding: 8px 0 10px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-style: italic;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.onboarding-input:focus { border-bottom-color: var(--ink); }
+.onboarding-input::placeholder { color: var(--ink-faint); font-style: italic; }
+
+.gender-options {
+  display: flex; flex-direction: column;
+  gap: 8px;
+}
+.gender-option {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 16px;
+  background: transparent;
+  border: 1.5px solid var(--ink-faint);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  text-align: left;
+  font-weight: 500;
+}
+.gender-option:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+.gender-option.selected {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+.gender-mark {
+  width: 12px; height: 12px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+}
+.gender-option.selected .gender-mark::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: var(--ochre);
+  border-radius: 50%;
+}
+
+.onboarding-note {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  font-style: italic;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 15px;
+  margin-top: 10px;
+}
+
+/* ── QUIZ ── */
+.quiz { animation: fadeUp 0.5s ease both; }
+.quiz-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 28px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--ink-faint);
+}
+.quiz-counter {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--ink-soft); font-weight: 600;
+}
+.quiz-counter-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 22px;
+  color: var(--ink);
+  margin-right: 4px;
+}
+
+.progress-track {
+  width: 100%;
+  height: 4px;
+  background: var(--paper-shadow);
+  margin-bottom: 28px;
+  position: relative;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--ink);
+  transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+
+.q-block {
+  background: rgba(255,253,247,0.5);
+  border: 1.5px solid var(--ink);
+  padding: 32px 28px 28px;
+  margin-bottom: 24px;
+  position: relative;
+}
+.q-block::before {
+  content: '';
+  position: absolute;
+  top: -1.5px; left: -1.5px; width: 32px; height: 32px;
+  border-top: 4px solid var(--ochre);
+  border-left: 4px solid var(--ochre);
+}
+.q-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  line-height: 1.4;
+  color: var(--ink);
+  font-weight: 500;
+  margin-bottom: 24px;
+}
+
+.likert {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.likert-option {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 16px;
+  background: transparent;
+  border: 1.5px solid var(--ink-faint);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  text-align: left;
+  font-weight: 500;
+}
+.likert-option:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+  transform: translateX(4px);
+}
+.likert-option.selected {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+.likert-mark {
+  width: 14px; height: 14px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+}
+.likert-option.selected .likert-mark::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: var(--ochre);
+  border-radius: 50%;
+}
+
+.quiz-nav {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+.quiz-nav-dots {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  flex: 1; justify-content: center;
+}
+
+.quiz-prev-next {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+.btn-step {
+  background: transparent;
+  border: 1.5px solid var(--ink);
+  color: var(--ink);
+  font-family: 'Inter', sans-serif;
+  font-size: 11px; letter-spacing: 1.8px; text-transform: uppercase;
+  font-weight: 600;
+  padding: 11px 18px;
+  border-radius: 0;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-step:hover:not(:disabled) {
+  background: var(--ink);
+  color: var(--paper);
+}
+.btn-step:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  border-color: var(--ink-faint);
+  color: var(--ink-faint);
+}
+.btn-step .step-arrow {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  font-style: italic;
+}
+
+.quiz-nav-hint {
+  text-align: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin-top: 10px;
+  opacity: 0.7;
+}
+.qdot {
+  width: 8px; height: 8px;
+  border: 1.5px solid var(--ink-faint);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.qdot.answered { background: var(--ink); border-color: var(--ink); }
+.qdot.current { border-color: var(--vermillion); background: var(--vermillion); transform: scale(1.4); }
+
+/* ── BRIDGE / VALIDATION ── */
+.bridge {
+  animation: fadeUp 1s ease both;
+  text-align: center;
+  padding: 40px 20px;
+}
+.bridge-mark {
+  display: flex; justify-content: center;
+  margin-bottom: 28px;
+}
+.bridge h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(28px, 6vw, 38px);
+  font-weight: 500;
+  font-style: italic;
+  color: var(--ink);
+  line-height: 1.2;
+  margin-bottom: 20px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.bridge-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  line-height: 1.65;
+  color: var(--ink-soft);
+  max-width: 460px;
+  margin: 0 auto 24px;
+  font-weight: 400;
+}
+.bridge-text + .bridge-text {
+  margin-top: -8px;
+}
+.bridge-line {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 22px;
+  color: var(--vermillion);
+  margin: 28px 0;
+  font-weight: 500;
+}
+.bridge-cta {
+  margin-top: 32px;
+}
+
+/* ── RESULT ── */
+.result { animation: fadeUp 0.7s ease both; }
+.result-header {
+  text-align: center;
+  margin-bottom: 36px;
+}
+.result-eyebrow-wrap {
+  display: flex; justify-content: center;
+  margin-bottom: 16px;
+}
+.result-header h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(30px, 7vw, 44px);
+  font-weight: 500;
+  font-style: italic;
+  color: var(--ink);
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+.result-subtitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px;
+  font-style: italic;
+  color: var(--ink-soft);
+  max-width: 460px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+.result-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 18px;
+  color: var(--vermillion);
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* Constellation visualization */
+.constellation-result {
+  background: rgba(255,253,247,0.6);
+  border: 1.5px solid var(--ink);
+  padding: 28px 24px;
+  margin-bottom: 28px;
+  position: relative;
+}
+.constellation-result::before {
+  content: '';
+  position: absolute;
+  top: -1.5px; right: -1.5px; width: 32px; height: 32px;
+  border-top: 4px solid var(--cobalt);
+  border-right: 4px solid var(--cobalt);
+}
+.constellation-label {
+  font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--ink-soft); font-weight: 600;
+  margin-bottom: 18px;
+  display: flex; align-items: center; gap: 10px;
+}
+.constellation-help {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  font-style: italic;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 14px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--ink-faint);
+}
+
+/* Bars */
+.bars {
+  display: flex; flex-direction: column;
+  gap: 14px;
+  margin-top: 8px;
+}
+.bar-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+.bar-top {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 12px;
+}
+.bar-name-wrap {
+  display: flex; align-items: baseline; gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.bar-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink);
+  font-style: italic;
+}
+.bar-tier {
+  font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.bar-value {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.bar-track {
+  width: 100%; height: 10px;
+  background: var(--paper-shadow);
+  position: relative;
+}
+.bar-fill {
+  height: 100%;
+  transition: width 1s cubic-bezier(0.2,0.8,0.2,1);
+  position: relative;
+}
+
+.tier-primary .bar-name { color: var(--ink); }
+.tier-primary .bar-tier { color: var(--vermillion); }
+.tier-secondary .bar-name { color: var(--ink); }
+.tier-secondary .bar-tier { color: var(--ochre); }
+.tier-latent .bar-name { color: var(--ink-soft); opacity: 0.85; }
+.tier-latent .bar-tier { color: var(--ink-faint); }
+
+/* Result sections */
+.rsection {
+  background: rgba(255,253,247,0.6);
+  border: 1.5px solid var(--ink);
+  padding: 26px 24px;
+  margin-bottom: 18px;
+  position: relative;
+}
+.rsection-corner {
+  position: absolute;
+  top: -1.5px; left: -1.5px; width: 28px; height: 28px;
+  border-top: 4px solid;
+  border-left: 4px solid;
+}
+.rsection-label {
+  font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+  font-weight: 700;
+  color: var(--ink-soft);
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.rsection-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--ink);
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+.rsection-text {
+  font-size: 14.5px; line-height: 1.65;
+  color: var(--ink-soft);
+}
+.rsection-text + .rsection-text {
+  margin-top: 12px;
+}
+.rsection p strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.tipo-block {
+  border-top: 1px dashed var(--ink-faint);
+  padding-top: 22px;
+  margin-top: 22px;
+}
+.tipo-block:first-of-type {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+.tipo-block-head {
+  display: flex; align-items: center;
+  gap: 10px; margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.tipo-block-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--ink);
+}
+.tipo-block-pct {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px; letter-spacing: 1.5px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  margin-left: auto;
+}
+
+ul.bullets {
+  list-style: none;
+  margin: 8px 0 0 0;
+}
+ul.bullets li {
+  position: relative;
+  padding-left: 18px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+ul.bullets li::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 9px;
+  width: 6px; height: 6px;
+  background: var(--ochre);
+  border-radius: 50%;
+}
+ul.bullets.cobalt li::before { background: var(--cobalt); }
+ul.bullets.vermillion li::before { background: var(--vermillion); }
+ul.bullets.emerald li::before { background: var(--emerald); }
+ul.bullets.plum li::before { background: var(--plum); }
+ul.bullets.ink li::before { background: var(--ink); }
+
+.coping-paragraph {
+  background: var(--paper-warm);
+  padding: 16px 18px;
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--ink-soft);
+  border-left: 3px solid var(--ochre);
+}
+.coping-paragraph.cobalt { border-left-color: var(--cobalt); }
+.coping-paragraph.vermillion { border-left-color: var(--vermillion); }
+.coping-paragraph.emerald { border-left-color: var(--emerald); }
+.coping-paragraph.plum { border-left-color: var(--plum); }
+.coping-paragraph.ink { border-left-color: var(--ink); }
+
+.reparenting-step {
+  background: var(--paper-warm);
+  border-left: 3px solid var(--cobalt);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+.reparenting-step-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cobalt);
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+.reparenting-step-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 6px;
+  font-style: italic;
+}
+.reparenting-step-text {
+  font-size: 13.5px; line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.practice-handwritten {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 17px;
+  color: var(--vermillion);
+  margin-top: 14px;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.integration-question {
+  background: rgba(255,253,247,0.6);
+  border: 1.5px dashed var(--ink-faint);
+  padding: 22px 22px;
+  margin-top: 14px;
+}
+.integration-question-label {
+  font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--ink-soft); font-weight: 700;
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 10px;
+}
+.integration-question-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 19px;
+  font-style: italic;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.45;
+}
+
+.closing-note {
+  background: rgba(255,253,247,0.6);
+  border: 1.5px dashed var(--ink-faint);
+  padding: 26px 24px;
+  text-align: center;
+  margin-top: 24px;
+}
+.closing-note-label {
+  font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--ink-soft); font-weight: 700;
+  margin-bottom: 12px;
+}
+.closing-question {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-style: italic;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+.cta-row {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  margin-top: 28px;
+}
+.cta-row .btn-primary, .cta-row .btn-ghost {
+  flex: 1;
+  justify-content: center;
+  min-width: 140px;
+}
+
+/* ── VIEW TOGGLE (chapters / full) ── */
+.view-toggle {
+  display: flex;
+  gap: 0;
+  margin: 0 auto 24px;
+  border: 1.5px solid var(--ink);
+  width: fit-content;
+  max-width: 100%;
+  background: transparent;
+}
+.toggle-btn {
+  background: transparent;
+  border: none;
+  padding: 11px 18px;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+  font-weight: 600;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  justify-content: center;
+  white-space: nowrap;
+}
+.toggle-btn + .toggle-btn {
+  border-left: 1.5px solid var(--ink);
+}
+.toggle-btn:hover:not(.active) { color: var(--ink); }
+.toggle-btn.active {
+  background: var(--ink);
+  color: var(--paper);
+}
+.toggle-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* ── CHAPTERS ── */
+.result-chapters .chapter-content {
+  animation: fadeUp 0.4s ease both;
+}
+.chapter-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--ink-faint);
+}
+.chapter-counter {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.chapter-counter-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 28px;
+  color: var(--ink);
+}
+.chapter-counter-total {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px; letter-spacing: 2px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.chapter-counter-sep {
+  color: var(--ink-faint);
+  margin: 0 4px;
+}
+.chapter-counter-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.chapter-dots {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.chapter-dot {
+  width: 28px; height: 4px;
+  border: none;
+  background: var(--paper-shadow);
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+  border-radius: 0;
+}
+.chapter-dot.visited {
+  background: var(--ink-soft);
+}
+.chapter-dot.current {
+  background: var(--vermillion);
+  height: 5px;
+}
+.chapter-dot:hover {
+  background: var(--ink);
+}
+.chapter-dot.current:hover {
+  background: var(--vermillion);
+}
+
+.chapter-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--ink-faint);
+}
+
+/* ── BIBLIOTECA ── */
+.biblioteca { animation: fadeUp 0.6s ease both; }
+.biblioteca-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.biblioteca-header h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(32px, 7vw, 46px);
+  font-weight: 500;
+  font-style: italic;
+  color: var(--ink);
+  line-height: 1.05;
+  margin: 12px 0 8px;
+}
+.biblioteca-header p {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px;
+  font-style: italic;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  max-width: 460px;
+  margin: 14px auto 0;
+}
+
+.tipo-grid {
+  display: grid; grid-template-columns: 1fr;
+  gap: 14px;
+  margin-top: 24px;
+}
+@media (min-width: 560px) {
+  .tipo-grid { grid-template-columns: 1fr 1fr; }
+}
+
+.tipo-card {
+  background: rgba(255,253,247,0.6);
+  border: 1.5px solid var(--ink);
+  padding: 22px 20px 20px;
+  cursor: pointer;
+  transition: all 0.25s;
+  position: relative;
+  display: flex; flex-direction: column;
+  gap: 8px;
+}
+.tipo-card:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.tipo-card-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--ink);
+  line-height: 1.15;
+}
+.tipo-card-subtitle {
+  font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--ink-soft); font-weight: 700;
+}
+.tipo-card-preview {
+  font-size: 13.5px; line-height: 1.55;
+  color: var(--ink-soft);
+  margin-top: 6px;
+}
+.tipo-card-arrow {
+  align-self: flex-end;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-style: italic;
+  color: var(--ink);
+  margin-top: 6px;
+}
+
+/* ── DETAIL ── */
+.tipo-detail { animation: fadeUp 0.6s ease both; }
+.detail-header {
+  background: rgba(255,253,247,0.6);
+  border: 1.5px solid var(--ink);
+  padding: 36px 28px 28px;
+  text-align: center;
+  margin-bottom: 24px;
+  position: relative;
+}
+.detail-header h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(30px, 7vw, 42px);
+  font-weight: 600;
+  font-style: italic;
+  color: var(--ink);
+  line-height: 1.05;
+  margin: 12px 0 8px;
+}
+.detail-subtitle {
+  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--ink-soft); font-weight: 600;
+}
+
+/* ── ANIM ── */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+
+.toast {
+  position: fixed; bottom: 32px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink); color: var(--paper);
+  padding: 12px 22px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 1px;
+  z-index: 200;
+  animation: fadeUp 0.3s ease both;
+  white-space: nowrap;
+}
+
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(31,32,36,0.4);
+  backdrop-filter: blur(4px);
+  z-index: 300;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.25s ease both;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal {
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  max-width: 420px;
+  width: 100%;
+  padding: 32px 28px;
+  position: relative;
+  text-align: center;
+}
+.modal h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px;
+  font-style: italic;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+.modal p {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  margin-bottom: 22px;
+}
+.modal-actions {
+  display: flex; gap: 10px; justify-content: center;
+}
+
+</style>
+</head>
+<body>
+
+<!-- Background scribbles -->
+<svg class="scribble-bg s1" width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+  <path d="M5,30 Q15,10 30,25 T55,30" stroke="#2854a8" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <circle cx="50" cy="15" r="2" fill="#c83c20"/>
+</svg>
+<svg class="scribble-bg s2" width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10,10 L10,40 M5,40 L15,40" stroke="#1f2024" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <circle cx="35" cy="20" r="6" fill="none" stroke="#d9a52a" stroke-width="2"/>
+</svg>
+<svg class="scribble-bg s3" width="55" height="55" viewBox="0 0 55 55" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10,30 L20,18 L30,30 L20,42 Z" fill="none" stroke="#2d7548" stroke-width="1.5"/>
+  <line x1="35" y1="35" x2="48" y2="22" stroke="#1f2024" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
+<svg class="scribble-bg s4" width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+  <path d="M25,5 L28,18 L41,18 L31,26 L34,40 L25,32 L16,40 L19,26 L9,18 L22,18 Z" fill="none" stroke="#c83c20" stroke-width="1.5"/>
+</svg>
+<svg class="scribble-bg s5" width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="20" cy="20" r="14" fill="none" stroke="#7a3458" stroke-width="1.5"/>
+</svg>
+<svg class="scribble-bg s6" width="60" height="40" viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg">
+  <path d="M5,20 Q15,5 30,20 Q45,35 55,20" stroke="#d9a52a" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+</svg>
+
+<div class="container" id="app"></div>
+
+<script>
+
+// ────────────────────────────────────────────────
+// SISTEMA DE GÉNERO — plantillas con marcadores
+// ────────────────────────────────────────────────
+// Marcadores soportados:
+//
+//   {a/o}                            → 'a' en femenino, 'o' en masculino, 'o' por defecto en neutro (RAE)
+//   {f:textoF|m:textoM|n:textoN}     → tres ramas explícitas
+//
+// Filosofía neutra: en vez de "e" (cansade/liste), usamos masculino genérico
+// (forma RAE estándar) o reformulaciones impersonales cuando el contexto lo permite.
+
+function flex(genderKey, template) {
+  if (!template) return '';
+  let out = template;
+
+  // Patrón completo: {f:...|m:...|n:...}
+  out = out.replace(/\{f:([^|}]*)\|m:([^|}]*)\|n:([^}]*)\}/g, (_, ff, mm, nn) => {
+    if (genderKey === 'f') return ff;
+    if (genderKey === 'm') return mm;
+    return nn;
+  });
+
+  // Patrón corto: {a/o}
+  out = out.replace(/\{a\/o\}/g, () => {
+    if (genderKey === 'f') return 'a';
+    if (genderKey === 'm') return 'o';
+    return 'o';
+  });
+
+  return out;
+}
+
+// ────────────────────────────────────────────────
+// DATA: 6 TIPOS DE HERIDAS TEMPRANAS
+// ────────────────────────────────────────────────
+
+const COLORS = {
+  realidad_negada: 'cobalt',
+  invisible: 'plum',
+  guion_ajeno: 'vermillion',
+  sin_contencion: 'emerald',
+  superficie_pulida: 'ochre',
+  adulto_temprano: 'ink'
+};
+
+const COLOR_VALUES = {
+  cobalt: '#2854a8',
+  plum: '#7a3458',
+  vermillion: '#c83c20',
+  emerald: '#2d7548',
+  ochre: '#d9a52a',
+  ink: '#1f2024'
+};
+
+function buildTipos(genderKey) {
+  const f = (template) => flex(genderKey, template);
+
+  return {
+    realidad_negada: {
+      name: "La realidad negada",
+      subtitle: "Cuando lo que sentías era cuestionado",
+      short: "Crecer escuchando que lo que sentías o veías estaba lejos de lo real.",
+      preview: "Aprendiste a buscar afuera la confirmación de algo que ya sabías por dentro.",
+
+      descripcion: "En tu casa, lo que percibías rara vez encontraba eco. Decías que algo te dolía y te respondían que estabas exagerando. Notabas tensión en el aire y te aseguraban que todo estaba bien. Recordabas algo y te corregían la versión. Pudo ser sutil, repetido, casi invisible —pero el efecto fue claro: aprendiste a poner el peso de la verdad afuera de ti.",
+
+      en_la_vida_adulta_resultado: [
+        "Cuando algo en ti ya sabe la respuesta, sigue habiendo un trecho largo entre saberlo y permitirte actuar desde ahí.",
+        "La seguridad ajena tiene un peso desproporcionado para ti —cuando alguien afirma con convicción, lo tuyo se encoge.",
+        "Ciertas escenas de tu vida las has revisado tantas veces que ya no sabes si las recuerdas o las construiste para hacerlas tolerables.",
+        "Tienes radar agudo para la invalidación cuando le pasa a otra persona, y sin embargo te cuesta nombrarla cuando te toca a ti."
+      ],
+
+      en_la_vida_adulta_libreria: [
+        "Una tendencia a buscar validación externa antes de confiar en lo propio.",
+        "Dificultad para sostener la propia versión cuando alguien la cuestiona con seguridad.",
+        "Frases recurrentes como 'a lo mejor exageré' o 'capaz me lo imaginé'.",
+        "Sensibilidad fina para detectar invalidación cuando le ocurre a otras personas.",
+        "Hipervigilancia en conversaciones, midiendo reacciones y matices."
+      ],
+
+      coping_paragraph: "Cuando esta herida está activa, el sistema desarrolla una vigilancia fina hacia el exterior. Lees a las personas, mides reacciones, comparas tu versión con la de otros antes de fiarte de ella. En la práctica eso se siente como sobreanalizar conversaciones, pedir segundas opiniones para decisiones pequeñas, o repasar mentalmente una escena buscando dónde te equivocaste. Esa vigilancia tiene sentido —fue la estrategia de un sistema que aprendió que la verdad estaba afuera, y que para no equivocarse había que mirar muy bien hacia afuera primero. Hoy puede ser un peso. En su momento te cuidó.",
+
+      fortalezas: f("Tu duda crónica te volvió {f:una observadora aguda|m:un observador agudo|n:alguien con mirada aguda}. Notas matices que otros pasan por alto, hilas detalles, captas lo no dicho. Cuando finalmente confías en algo, es porque lo examinaste desde todos los ángulos. Esa precisión es un don. Lo que sigue es aprender a aplicarla también hacia adentro, con la misma seriedad y menos miedo."),
+
+      reparenting: [
+        { num: "01", title: "Nombrar lo que sientes sin justificarlo",
+          text: "Antes de explicar por qué te sientes así, simplemente nómbralo. 'Estoy triste.' Punto. La justificación viene de la duda; la afirmación viene de la confianza. Empezar por la afirmación es un acto de reparación." },
+        { num: "02", title: "Llevar registro de tus percepciones acertadas",
+          text: "Anota momentos en los que sentiste algo, alguien lo cuestionó, y al final tu lectura era la correcta. Releerlo es evidencia tangible de que tu radar funciona. Sirve para recordarte que ya sabes." },
+        { num: "03", title: "Antes de pedir opinión, formular la tuya",
+          text: "Cuando vayas a consultar algo, primero detente y formula tu propia respuesta. Aunque después la contrastes, ya habrás hecho el ejercicio de escucharte primero. Es un hábito que se construye con repetición." }
+      ],
+
+      practica: "Cuando dudes de lo que sientes, pon una mano en el pecho y di: 'esto es lo que estoy sintiendo, aunque todavía no entienda por qué.'",
+
+      pregunta: "¿Qué cosa sabes en el cuerpo y todavía estás esperando que alguien te confirme antes de creértela?"
+    },
+
+    invisible: {
+      name: "Sentirse invisible",
+      subtitle: "Cuando tu mundo interior no tuvo testigo",
+      short: "Crecer con lo material cubierto y lo emocional sin compañía.",
+      preview: f("Aprendiste a habitarte por tu cuenta. Por eso pedir compañía adentro cuesta —incluso contigo {f:misma|m:mismo|n:mismo}."),
+
+      descripcion: "Quienes te criaron pudieron ser buenas personas. Pudieron darte techo, educación, comida. Pero algo más sutil quedó pendiente: la sensación de que alguien estaba interesado en quién eras por dentro. Tus emociones no eran rechazadas —simplemente no eran objeto de atención. Aprendiste a entretenerte por tu cuenta, a procesar por tu cuenta, a no hacer ruido. Y aprendiste, sin darte cuenta, que pedir atención emocional era un gesto extraño.",
+
+      en_la_vida_adulta_resultado: [
+        "Cuando alguien te pone el foco encima con interés genuino, una parte tuya no sabe qué hacer con esa atención.",
+        "Has construido una vida donde no necesitas a nadie emocionalmente, y a veces eso se siente menos como libertad y más como una versión muy bien decorada de la soledad.",
+        "El acomodo a lo que el otro quiere no es generosidad: es el lugar donde tu sistema aprendió a estar tranquilo.",
+        "Hay zonas tuyas que casi nadie conoce, no porque las escondas, sino porque nunca te enseñaron que se podían contar."
+      ],
+
+      en_la_vida_adulta_libreria: [
+        "Dificultad para identificar las propias necesidades antes de que alguien las pregunte.",
+        "Tendencia a acomodarse al deseo del otro en relaciones cercanas.",
+        "Reacciones intensas (emoción o incomodidad) ante atención emocional plena.",
+        "Hábito de procesar el dolor en silencio antes que compartirlo.",
+        "Vida construida sobre la auto-suficiencia emocional, a veces a costa de la conexión."
+      ],
+
+      coping_paragraph: "Esta herida suele cristalizarse en una forma muy concreta de auto-protección: la auto-suficiencia. Aprendes a no necesitar para no decepcionarte. A no pedir para no sentir el vacío de una respuesta tibia. A construir un mundo interno tan rico que no haga falta nadie afuera. Visto desde lejos parece fortaleza, y lo es en parte. Pero por dentro, el sistema mantiene una premisa: pedir es exponerse, y exponerse duele. Aflojar esto no es volverse dependiente; es darle al cuerpo la experiencia de pedir y sí ser respondido.",
+
+      fortalezas: "Aprendiste a habitarte por tu cuenta desde temprano, y eso te dio un mundo interior rico, propio. Lees, escribes, observas, sientes con profundidad —porque no había nadie llenándote por fuera. Esa autosuficiencia es real, no solo defensa: hay una parte tuya que sabe estar contigo. Lo que viene ahora es ampliar el repertorio. A estar contigo ya sabes; ahora se trata de aprender a estar con otros.",
+
+      reparenting: [
+        { num: "01", title: "Una práctica diaria de escucha interna",
+          text: "Cinco minutos al día, pregúntate: '¿qué necesito ahora?' La respuesta puede ser pequeña: agua, descanso, silencio, un abrazo. Lo importante es entrenar el músculo de notarte. Ese músculo se atrofió cuando nadie te preguntaba." },
+        { num: "02", title: "Pedir cosas pequeñas, sin justificarlas",
+          text: "Pídele a alguien de confianza algo que te gustaría —un café, que te acompañe, que te escuche un rato— sin agregar 'si no puedes está bien'. Pedir es una habilidad que se aprende empezando por cosas chicas." },
+        { num: "03", title: "Recibir cuidado fuera de las crisis",
+          text: "Recibir solo en emergencias mantiene al sistema en modo 'no necesito hasta que colapso'. Practica recibir atención cuando estás bien: una conversación tranquila, un gesto pequeño, alguien que se quede contigo sin motivo urgente." }
+      ],
+
+      practica: "Hoy, antes de preguntar 'qué quieres tú', detente y pregúntate primero: 'qué quiero yo'.",
+
+      pregunta: "¿Qué necesitarías hoy si te dieras permiso de necesitar algo?"
+    },
+
+    guion_ajeno: {
+      name: "Vivir el guion ajeno",
+      subtitle: "Cuando se te quería en función de quién deberías ser",
+      short: "Crecer sintiendo que el cariño venía con condiciones —rendir, brillar, no fallar.",
+      preview: f("Aprendiste que ser querid{a/o} y ser útil eran lo mismo. Por eso descansar todavía se siente prohibido."),
+
+      descripcion: f("Hubo un proyecto sobre ti, aunque nadie lo dijera así. Las personas que te criaron tenían una idea de quién deberías ser —brillante, exitos{a/o}, ejemplar, una extensión de algo que ellas no pudieron ser— y el cariño llegaba más fácil cuando cumplías ese molde. Muchas veces venía del amor, del orgullo, del deseo de que tuvieras lo que ellas no tuvieron. Pero el efecto fue que, sin darte cuenta, asociaste ser querid{a/o} con producir."),
+
+      en_la_vida_adulta_resultado: [
+        "Tu valor te lo defines por el último resultado, no por la suma de quien eres.",
+        "El descanso se siente como una pausa que tienes que justificar, en vez de un derecho que ya tienes.",
+        "Recibes elogios por lo que produces con naturalidad, y los elogios por quién eres se quedan flotando porque no sabes dónde acomodarlos.",
+        "Hay una voz interna evaluadora que casi nunca se calla, y de tan familiar a veces la confundes con tu propia voz."
+      ],
+
+      en_la_vida_adulta_libreria: [
+        "Autoestima fuertemente atada al rendimiento o los logros.",
+        "Culpa frente al descanso o al ocio sin propósito.",
+        "Mayor comodidad recibiendo elogios por lo producido que por quién se es.",
+        "Una voz interna evaluativa que mide constantemente la suficiencia.",
+        "Tendencia a procesar los fracasos compensándolos con más logros."
+      ],
+
+      coping_paragraph: "El mecanismo central aquí es el perfeccionismo, pero opera de una manera particular: como identidad, no como técnica. Querer hacer las cosas bien es saludable; lo otro es cuando tu valor como persona depende de hacerlas bien. Eso convierte cada tarea en una pequeña audición. La auto-exigencia se siente como motor, pero por dentro es defensa: si produzco suficiente, nadie podrá rechazarme. Esa estrategia ha producido cosas reales en tu vida. Lo que viene es separar la productividad de la dignidad.",
+
+      fortalezas: "Tu disciplina, tu capacidad de empuje, tu nivel de ejecución son reales. Hay cosas hermosas en tu vida porque tú las hiciste posibles, y eso no es ilegítimo. La trampa no está en que rindas; está en que tu valor dependa de eso. Cuando logres separar la productividad de la dignidad, vas a poder seguir creando, pero desde otro lugar.",
+
+      reparenting: [
+        { num: "01", title: "Practicar 'no hacer' sin justificarlo",
+          text: "Reserva tiempo en tu semana para algo que no produzca nada. Una caminata sin podcast, mirar una ventana, no documentar nada. Es entrenar al sistema a que tu existencia tiene valor sin output." },
+        { num: "02", title: "Recibir cariño no transaccional",
+          text: "Cuando alguien diga algo cariñoso que no esté ligado a algo que hiciste, no lo desvíes con humor ni cambies de tema. Quédate. Respira. Dilo en voz baja: 'me están queriendo sin que haya hecho nada.' Lo necesitas escuchar." },
+        { num: "03", title: "Hablar de fracasos sin envolverlos en aprendizaje",
+          text: f("La trampa moderna es convertir todo error en lección épica. Practica decir 'esto me salió mal' y dejarlo ahí, sin redimir. Eres dign{a/o} también cuando fallas y no sacas moraleja.") }
+      ],
+
+      practica: "Hoy haz algo que disfrutes y no le cuentes a nadie. No es contenido. Es tuyo.",
+
+      pregunta: "¿Quién serías si no tuvieras que demostrar nada por hoy?"
+    },
+
+    sin_contencion: {
+      name: "Sin contención",
+      subtitle: "Cuando los límites en casa eran caos o muralla",
+      short: "Crecer entre el caos y el control —sin un punto medio donde construir seguridad.",
+      preview: "Aprendiste a leer el clima en lugar de fiarte de la estructura. Por eso la calma a veces se siente sospechosa.",
+
+      descripcion: "Hubo dos versiones posibles de esta herida. En una, la estructura escaseaba: las reglas cambiaban según el humor del día, las rutinas eran impredecibles, no sabías qué esperar al volver a casa. En la otra, la estructura sobraba: control, rigidez, micromanejo, reglas absurdas que no se podían cuestionar. Ambos extremos enseñan algo parecido: que la seguridad es algo externo y volátil, más que algo que se pueda construir y sostener.",
+
+      en_la_vida_adulta_resultado: [
+        "Tu sistema nervioso aprendió a operar en alerta, así que la calma sostenida lo desorienta —empieza a buscar la próxima ola.",
+        "Las relaciones tranquilas a veces te hacen dudar, no porque sean malas, sino porque tu cuerpo no las reconoce como casa.",
+        "Los límites te salen en dos modos: el silencio largo, y luego la frase definitiva. El intermedio gradual lo estás aprendiendo todavía.",
+        "Las rutinas se te hacen difíciles porque crecer en lo impredecible te enseñó que la estructura es una pose, no un lugar."
+      ],
+
+      en_la_vida_adulta_libreria: [
+        "Relación tensa con las rutinas: idealización seguida de abandono, o rigidez ansiosa.",
+        "Aburrimiento o sospecha frente a las relaciones estables.",
+        "Sensación de inquietud cuando el entorno permanece calmo demasiado tiempo.",
+        "Identificación con la intensidad, los extremos, el 'todo o nada'.",
+        "Límites que oscilan entre la ausencia y la muralla, sin gradaciones intermedias."
+      ],
+
+      coping_paragraph: "El sistema desarrolla aquí una alternancia particular: o controla todo o suelta todo. El control rígido busca evitar el caos del pasado; el caos compulsivo busca evitar la rigidez del pasado. Ambos extremos son intentos de regular la sensación de seguridad desde afuera, porque no se internalizó que la calma podía ser confiable. La adicción a la intensidad —relaciones intensas, proyectos intensos, ciclos de altísimo y bajísimo— es otra forma de la misma estrategia: el sistema nervioso aprendió a operar en alerta y la calma se siente como vacío. Hacer las paces con lo estable es aprender un idioma nuevo.",
+
+      fortalezas: "Aprendiste a improvisar, a leer entornos cambiantes, a sobrevivir en condiciones impredecibles. Esa adaptabilidad es real y valiosa. Sabes funcionar donde otros se paralizan. Lo que viene ahora es la capacidad de quedarte en lo estable sin que se sienta una trampa. La calma se aprende. Y se merece.",
+
+      reparenting: [
+        { num: "01", title: "Construir una rutina mínima e innegociable",
+          text: "Empieza con una sola cosa: levantarte a la misma hora, una caminata diaria, escribir tres líneas antes de dormir. Sostenla 30 días, aunque te aburra. La estabilidad se vuelve segura solo cuando la habitas suficiente tiempo." },
+        { num: "02", title: "Distinguir 'aburrido' de 'sin amenaza'",
+          text: "Cuando algo se sienta aburrido, detente y pregúntate: ¿es genuinamente aburrido, o mi sistema está acostumbrado a operar en alerta? La calma puede sentirse como vacío al principio. Es espacio que el cuerpo todavía no sabe ocupar." },
+        { num: "03", title: "Practicar límites del tamaño correcto",
+          text: "Un límite no tiene que ser una muralla ni una negociación interminable. Practica frases simples: 'eso no me funciona', 'prefiero que no', 'no esta vez'. Sin explicar de más. Quedarte presente después de poner el límite es la parte que sana." }
+      ],
+
+      practica: "Hoy elige algo pequeño y sostenlo. Una cosa, una vez, repetida.",
+
+      pregunta: "¿En qué parte de tu vida la calma todavía se siente como aburrimiento, y qué pasaría si la dejaras quedarse?"
+    },
+
+    superficie_pulida: {
+      name: "La superficie pulida",
+      subtitle: "Cuando lo visible importaba más que lo sentido",
+      short: "Crecer en una casa donde la imagen, el qué dirán o el éxito visible eran prioridad.",
+      preview: "Aprendiste a presentarte antes que a habitarte. Te conoces más por cómo te ven que por cómo te sientes.",
+
+      descripcion: "En tu casa la apariencia tenía peso. Pudo ser apariencia social —el qué dirán, las fotos felices, mantener la fachada—, apariencia de éxito —los logros visibles, el estatus, la imagen profesional—, o apariencia física —el peso, la forma de vestir, el cuidado de la imagen. El mensaje subyacente fue similar: lo que se ve pesa más que lo que se siente. Y aprendiste, sin darte cuenta, a producir una versión presentable de ti todo el tiempo.",
+
+      en_la_vida_adulta_resultado: [
+        "Tu identidad se siente más sólida cuando te describes desde afuera —de pronto, mirarte desde adentro es un terreno menos firme.",
+        "Mostrarte en mal estado se siente como un riesgo desproporcionado, así que prefieres desaparecer y volver cuando ya estás presentable.",
+        "Hay una versión tuya que la mayoría de la gente conoce, y otra que solo tú habitas. Ambas son tuyas, pero llevan tiempo sin hablarse.",
+        "La vulnerabilidad explícita te incomoda más de lo que admites en voz alta —incluso cuando te la ofrecen a ti."
+      ],
+
+      en_la_vida_adulta_libreria: [
+        "Conciencia constante de la propia imagen y la propia presentación.",
+        "Tendencia a aislarse en momentos vulnerables hasta poder recomponerse.",
+        "Distancia notoria entre la percepción externa y la sensación interna.",
+        "Identidad construida más desde categorías externas que desde lo sentido.",
+        "Incomodidad con la vulnerabilidad explícita, propia o ajena."
+      ],
+
+      coping_paragraph: "El mecanismo central aquí podría llamarse performance constante: una forma de habitar el mundo donde la auto-imagen funciona como armadura. La armadura cumple una función real —protege contra el juicio que en algún momento fue real—, pero también separa lo que se vive de lo que se muestra. La consecuencia más sutil es interna: cuando se performa demasiado tiempo, se empieza a perder contacto con lo que se siente debajo de la performance. La sanación no pasa por dejar de cuidar la imagen; pasa por ampliar el territorio de lo que se permite ser visible.",
+
+      fortalezas: "Tu sensibilidad estética, tu capacidad de leer contextos sociales, tu sofisticación para presentarte —son habilidades reales que probablemente te han abierto puertas. Lo que cuidaste de afuera no es mentira: es parte de ti. Lo que viene es ampliar el territorio. Lo que se ve y lo que se siente pueden coexistir, sin estar en bandos opuestos.",
+
+      reparenting: [
+        { num: "01", title: "Permitir momentos no estéticos",
+          text: f("Permítete estar despeinad{a/o}, mal vestid{a/o}, en un mal día —y no esconderte. Empieza con una persona segura. La sensación de no derrumbarte por dejarte ver así es la lección.") },
+        { num: "02", title: "Hablar de lo que sientes antes de lo que haces",
+          text: "Cuando alguien te pregunte cómo estás, antes de contestar con tu agenda o proyectos, detente y pregúntate qué estás sintiendo. Aunque después no lo digas, ya cambia tu conversación interna." },
+        { num: "03", title: "Practicar la vulnerabilidad medida",
+          text: f("Vulnerabilidad medida es contar algo verdadero a alguien que se lo ha ganado, en un momento adecuado. Identifica una persona segura y prueba decir una cosa que normalmente esconderías: 'la verdad estoy cansad{a/o}', 'eso me dolió', 'no sé qué quiero'. Empieza chico.") }
+      ],
+
+      practica: "Hoy nota una vez en la que ibas a 'componerte' antes de mostrarte. Quédate sin componerte un rato.",
+
+      pregunta: "¿Qué partes de ti están esperando que dejes de cuidar la fachada para poder respirar?"
+    },
+
+    adulto_temprano: {
+      name: "El adulto temprano",
+      subtitle: "Cuando tuviste que sostener antes de tiempo",
+      short: "Crecer regulando lo que las personas adultas en tu casa no podían sostener.",
+      preview: "Aprendiste a leer estados ajenos antes que los propios. Por eso tienes mano para cuidar, y descansar te cuesta.",
+
+      descripcion: "Las personas adultas en tu casa, por la razón que fuera —duelo, depresión, conflictos, adicción, su propia historia no procesada—, no podían sostenerse del todo. Y, por amor o por necesidad, aprendiste a leerlas. A bajar el volumen cuando estaban irritables. A consolarlas cuando estaban tristes. A mediar entre ellas. A no sumar problemas. Te volviste el adulto emocional de un sistema que se suponía que te sostenía a ti. Eso construyó una habilidad enorme y un costo también enorme.",
+
+      en_la_vida_adulta_resultado: [
+        "Estás tan acostumbrado a leer al otro antes de leerte a ti, que tu propio estado emocional muchas veces es lo último en aparecer.",
+        "Recibir te desorienta más que dar, porque dar es el lugar donde tu sistema sabe estar tranquilo.",
+        "Las relaciones donde tú eres el sostén se repiten, no por casualidad, sino porque ese rol es el más conocido.",
+        "Estar con personas estables al principio te deja un poco fuera de lugar, como si hubieras llegado con un guion que aquí no se necesita."
+      ],
+
+      en_la_vida_adulta_libreria: [
+        "Hiper-sensibilidad para leer estados emocionales ajenos.",
+        "Tendencia automática a asumir el rol de cuidador en grupos o vínculos.",
+        "Dificultad para recibir ayuda sin sentir incomodidad o deuda.",
+        "Patrón repetido de relaciones donde se sostiene al otro en crisis.",
+        "Sensación de extrañeza al estar con personas emocionalmente estables."
+      ],
+
+      coping_paragraph: f("Lo que en psicología se llama parentificación crónica suele convertirse en adulto en un patrón muy reconocible: la hiper-empatía y el cuidado compulsivo. Es la habilidad de sentir a otros antes de sentirte tú. Eso te hace excepcionalmente capaz de acompañar, y al mismo tiempo te mantiene en un rol que ya conoces demasiado bien. La dificultad para recibir es la otra cara: cuando todo el sistema está orientado a dar, recibir se siente desorientador, casi sospechoso. El trabajo no es dejar de cuidar. Es expandir el repertorio para que cuidar y ser cuidad{a/o} puedan coexistir."),
+
+      fortalezas: f("Tu capacidad de sostener a otros es excepcional. Eres la persona que aparece, que escucha, que sabe qué decir. Esa empatía profunda —que viene de haber tenido que leer microexpresiones desde chic{a/o}— es un don real, no solo trauma. Lo que sigue es aprender que tú también mereces ser cuidad{a/o}, y que recibir tiene tanta dignidad como dar."),
+
+      reparenting: [
+        { num: "01", title: "Identificar quién te sostiene a ti",
+          text: "Haz una lista de las personas en tu vida y, con honestidad, marca: ¿con quién puedo desplomarme yo? ¿Quién me sostiene cuando ya no puedo más? Si la lista es corta o no existe, ese es el primer trabajo. Tener gente que te cuide es reparador." },
+        { num: "02", title: "Pedir ayuda antes de necesitarla con urgencia",
+          text: "El sistema parentificado solo pide cuando ya no puede más. Practica pedir cuando todavía puedes —que te acompañen, que te escuchen, que te ayuden con algo logístico. Pedir desde la fuerza, y no desde el colapso, es una práctica distinta." },
+        { num: "03", title: "Distinguir acompañar de rescatar",
+          text: "Cuando alguien cercano está mal, tu instinto es activarte. Practica notar la diferencia entre acompañar (estar) y rescatar (asumir que tú eres responsable de que se les pase). Lo segundo te quema, y además infantiliza al otro." }
+      ],
+
+      practica: "Hoy, cuando notes que estás escaneando el estado de alguien, vuelve a ti: ¿cómo estoy yo, en este momento?",
+
+      pregunta: "¿De qué te liberarías si dejaras de ser responsable del bienestar emocional de las personas que amas?"
+    }
+  };
+}
+
+
+// ────────────────────────────────────────────────
+// PREGUNTAS — 36, 6 por tipo
+// Reescritas: situaciones concretas y escenas, no diagnósticos
+// ────────────────────────────────────────────────
+
+const QUESTIONS = [
+  // realidad_negada — situaciones disparadoras, no diagnósticos
+  { tipo: "realidad_negada", text: "Después de una conversación incómoda, me quedo dándole vueltas: ¿reaccioné mal? ¿exageré? ¿entendí mal?" },
+  { tipo: "realidad_negada", text: "Cuando cuento una escena de mi infancia, alguien de mi familia la recuerda muy distinto y eso me deja en silencio." },
+  { tipo: "realidad_negada", text: "Pregunto a varias personas qué piensan antes de fiarme de mi propia respuesta." },
+  { tipo: "realidad_negada", text: "Si alguien me lleva la contra con seguridad, en menos de un minuto ya estoy revisando si me equivoqué." },
+  { tipo: "realidad_negada", text: "Hay momentos de mi vida que recuerdo con fuerza, y al mismo tiempo dudo si pasaron como los recuerdo." },
+  { tipo: "realidad_negada", text: "Cuando algo me incomoda en una situación, lo primero que hago es buscar señales afuera para confirmar si era válido sentirlo." },
+
+  // invisible
+  { tipo: "invisible", text: "Si alguien me pregunta '¿y tú cómo estás?' con interés real, me cuesta encontrar por dónde empezar." },
+  { tipo: "invisible", text: "Si me preguntan qué quiero hacer, lo más rápido que sale es 'lo que tú prefieras'." },
+  { tipo: "invisible", text: "Si alguien me dedica atención plena por un rato largo, me emociono o me pongo incómodo más de lo esperado." },
+  { tipo: "invisible", text: "Tengo un mal día y mi primer impulso es no escribirle a nadie esa noche." },
+  { tipo: "invisible", text: "En conversaciones, me siento más en casa cuando soy yo quien escucha." },
+  { tipo: "invisible", text: "Hay cosas que pienso o siento todo el tiempo y nadie cercano sabe que las pienso o siento." },
+
+  // guion_ajeno
+  { tipo: "guion_ajeno", text: "Termino un día sin haber producido nada y para la noche ya estoy peor conmigo de lo que se justifica." },
+  { tipo: "guion_ajeno", text: "Cuando tengo un rato libre sin plan, aparece una culpa que tengo que sacudirme." },
+  { tipo: "guion_ajeno", text: "Si alguien me elogia por cómo soy o cómo me veo, no sé bien dónde poner el cumplido." },
+  { tipo: "guion_ajeno", text: "Desde chico entendí qué clase de persona se esperaba que yo fuera." },
+  { tipo: "guion_ajeno", text: "Cuando algo me sale mal, lo proceso poniéndome a producir algo que lo compense." },
+  { tipo: "guion_ajeno", text: "Hay una voz en mi cabeza que casi todo el tiempo está midiendo si estoy a la altura." },
+
+  // sin_contencion
+  { tipo: "sin_contencion", text: "Llevo varios días seguidos en calma y empieza a darme la sensación de que algo va a pasar." },
+  { tipo: "sin_contencion", text: "Arranco una rutina con entusiasmo, me cuesta más de lo previsto, y termino dejándola o cumpliéndola con ansiedad." },
+  { tipo: "sin_contencion", text: "Una relación tranquila por mucho tiempo empieza a hacérseme aburrida." },
+  { tipo: "sin_contencion", text: "El ánimo en mi casa cambiaba bastante según cómo estuvieran las personas adultas ese día." },
+  { tipo: "sin_contencion", text: "Cuando alguien me describe, palabras como 'intensa', 'extremos' o 'todo o nada' aparecen seguido." },
+  { tipo: "sin_contencion", text: "Cuando finalmente pongo un límite, lo pongo demasiado tarde o demasiado de golpe —y después me arrepiento." },
+
+  // superficie_pulida
+  { tipo: "superficie_pulida", text: "En reuniones, parte de mi atención está midiendo cómo me estoy viendo o cómo me estoy presentando." },
+  { tipo: "superficie_pulida", text: "Si me estoy sintiendo mal, prefiero cancelar planes hasta poder verme presentable." },
+  { tipo: "superficie_pulida", text: "En mi casa importaba lo que la gente de afuera fuera a pensar de nosotros." },
+  { tipo: "superficie_pulida", text: "Cuando me toca describirme, me sale más fácil decir qué hago que decir cómo me siento." },
+  { tipo: "superficie_pulida", text: "Cuando alguien se me muestra muy vulnerable de golpe, me incomodo más de lo que admito." },
+  { tipo: "superficie_pulida", text: "Antes de salir o subir una foto, hay un cálculo automático sobre cómo me voy a ver." },
+
+  // adulto_temprano
+  { tipo: "adulto_temprano", text: "Entro a un espacio y en pocos segundos ya sé cómo está cada persona, sin haberles preguntado." },
+  { tipo: "adulto_temprano", text: "En mis relaciones cercanas, suelo ser quien sostiene cuando hay crisis." },
+  { tipo: "adulto_temprano", text: "Cuando alguien me ofrece ayuda sin que yo la pida, mi primer impulso es decir que no o sentir que ya le debo algo." },
+  { tipo: "adulto_temprano", text: "Si miro mis vínculos importantes, varios pasaron por etapas largas donde el otro estaba mal y yo era el sostén." },
+  { tipo: "adulto_temprano", text: "Cuando estoy con gente emocionalmente estable, al principio no sé bien qué papel me toca." },
+  { tipo: "adulto_temprano", text: "Cuando hay tensión entre dos personas, mi cuerpo se activa antes de que yo decida intervenir." }
+];
+
+// Likert
+const LIKERT = [
+  { value: 1, label: "Nunca" },
+  { value: 2, label: "Casi nunca" },
+  { value: 3, label: "A veces" },
+  { value: 4, label: "Casi siempre" },
+  { value: 5, label: "Siempre" }
+];
+
+// ────────────────────────────────────────────────
+// STATE
+// ────────────────────────────────────────────────
+
+let screen = 'intro';
+let q = 0;
+let answers = new Array(QUESTIONS.length).fill(null);
+let detailKey = null;
+let showExitModal = false;
+
+// Result view state
+let resultView = 'chapters'; // 'chapters' | 'full'
+let currentChapter = 0;
+
+// User profile
+let userName = '';
+let userGender = null; // 'f', 'm', 'n'
+let TIPOS = buildTipos('n'); // default neutral; rebuilt when gender is chosen
+
+// ────────────────────────────────────────────────
+// SCORING (with normalization)
+// ────────────────────────────────────────────────
+
+function calcScores(){
+  const raw = {};
+  Object.keys(COLORS).forEach(k => raw[k] = 0);
+
+  QUESTIONS.forEach((qq, idx) => {
+    const a = answers[idx];
+    if (a !== null) raw[qq.tipo] += a;
+  });
+
+  // Raw percentages (out of 30 max per type — 6 questions × 5)
+  const rawPct = {};
+  Object.keys(raw).forEach(k => {
+    rawPct[k] = (raw[k] / 30) * 100;
+  });
+
+  // ── NORMALIZATION ──
+  // To avoid the "everyone gets 60% if they answer 3 to everything" issue,
+  // we normalize against the user's own mean response.
+  // Method: compute mean response across all answers (1-5),
+  // then for each type, compute deviation from that personal baseline.
+  // The final score blends raw % with this deviation.
+
+  const totalAnswers = answers.filter(a => a !== null);
+  const personalMean = totalAnswers.length > 0
+    ? totalAnswers.reduce((a,b) => a + b, 0) / totalAnswers.length
+    : 3;
+
+  // For each type, mean response per type
+  const typeMeans = {};
+  Object.keys(raw).forEach(k => {
+    const typeAnswers = QUESTIONS
+      .map((qq, idx) => qq.tipo === k ? answers[idx] : null)
+      .filter(a => a !== null);
+    typeMeans[k] = typeAnswers.length > 0
+      ? typeAnswers.reduce((a,b) => a + b, 0) / typeAnswers.length
+      : 0;
+  });
+
+  // Deviation from personal mean: positive = stronger than your average, negative = weaker
+  // Scale: deviations of -2 to +2 (since responses are 1-5 and personal mean roughly 2-4)
+  const deviations = {};
+  Object.keys(typeMeans).forEach(k => {
+    deviations[k] = typeMeans[k] - personalMean;
+  });
+
+  // Final score: weighted blend
+  // 60% raw, 40% deviation-adjusted
+  // Deviation gets translated: +2 deviation = +20%, -2 = -20%
+  const finalPct = {};
+  Object.keys(rawPct).forEach(k => {
+    const adjusted = rawPct[k] + (deviations[k] * 12);
+    finalPct[k] = Math.max(0, Math.min(100, Math.round(adjusted)));
+  });
+
+  return finalPct;
+}
+
+function tierFor(pct){
+  if (pct >= 60) return 'primary';
+  if (pct >= 35) return 'secondary';
+  return 'latent';
+}
+
+function tierLabel(t){
+  return t === 'primary' ? 'Primaria' : t === 'secondary' ? 'Secundaria' : 'Latente';
+}
+
+function allAnswered(){ return answers.every(a => a !== null); }
+function answeredCount(){ return answers.filter(a => a !== null).length; }
+
+// ────────────────────────────────────────────────
+// HELPERS
+// ────────────────────────────────────────────────
+
+function sortedScores(){
+  const sc = calcScores();
+  return Object.entries(sc)
+    .map(([k,v]) => ({ key: k, pct: v, tier: tierFor(v) }))
+    .sort((a,b) => b.pct - a.pct);
+}
+
+function go(s){ screen = s; showExitModal = false; render(); }
+function goHome(){ q = 0; answers = new Array(QUESTIONS.length).fill(null); userName = ''; userGender = null; TIPOS = buildTipos('n'); showExitModal = false; resultView = 'chapters'; currentChapter = 0; go('intro'); }
+function goResult(){ resultView = 'chapters'; currentChapter = 0; go('result'); }
+function goBiblioteca(){ go('biblioteca'); }
+function goDetail(key){ detailKey = key; go('detail'); }
+function startOnboarding(){ go('onboarding'); }
+function startQuiz(){
+  if (!userGender) { go('onboarding'); return; }
+  TIPOS = buildTipos(userGender);
+  q = 0;
+  answers = new Array(QUESTIONS.length).fill(null);
+  go('quiz');
+}
+function confirmExit(){ showExitModal = true; render(); }
+function cancelExit(){ showExitModal = false; render(); }
+
+function jumpToQ(idx){
+  q = idx;
+  render();
+}
+
+function selectAnswer(value){
+  answers[q] = value;
+  setTimeout(() => {
+    let next = -1;
+    for (let i = q + 1; i < QUESTIONS.length; i++) {
+      if (answers[i] === null) { next = i; break; }
+    }
+    if (next === -1) {
+      for (let i = 0; i < q; i++) {
+        if (answers[i] === null) { next = i; break; }
+      }
+    }
+    if (next === -1) {
+      go('bridge');
+      return;
+    }
+    q = next;
+    render();
+  }, 280);
+}
+
+function setName(value) {
+  userName = value.trim();
+  // re-render only the begin button state
+  const btn = document.getElementById('onboard-begin');
+  if (btn) {
+    btn.disabled = !userGender;
+  }
+}
+
+function setGender(g) {
+  userGender = g;
+  TIPOS = buildTipos(g);
+  // visually update
+  document.querySelectorAll('.gender-option').forEach(el => {
+    el.classList.toggle('selected', el.dataset.g === g);
+  });
+  const btn = document.getElementById('onboard-begin');
+  if (btn) {
+    btn.disabled = false;
+  }
+}
+
+function handleNameInput(e) {
+  setName(e.target.value);
+}
+
+function beginQuizFromOnboarding() {
+  // capture current name from input field
+  const input = document.getElementById('name-input');
+  if (input) userName = input.value.trim();
+  if (!userGender) return;
+  TIPOS = buildTipos(userGender);
+  q = 0;
+  answers = new Array(QUESTIONS.length).fill(null);
+  go('quiz');
+}
+
+// SVG generators
+
+function navMark(){
+  return `<svg viewBox="0 0 24 24" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="9" fill="none" stroke="#1f2024" stroke-width="1.5"/>
+    <line x1="12" y1="3" x2="12" y2="6" stroke="#c83c20" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="12" y1="18" x2="12" y2="21" stroke="#c83c20" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="3" y1="12" x2="6" y2="12" stroke="#d9a52a" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="18" y1="12" x2="21" y2="12" stroke="#d9a52a" stroke-width="1.5" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function introSymbol(){
+  // Cleaner Miró-inspired composition
+  return `<svg viewBox="0 0 200 140" width="200" height="140" xmlns="http://www.w3.org/2000/svg">
+    <!-- Vertical line -->
+    <line x1="40" y1="25" x2="40" y2="120" stroke="#1f2024" stroke-width="2" stroke-linecap="round"/>
+    <!-- Green circle on line -->
+    <circle cx="40" cy="55" r="11" fill="none" stroke="#2d7548" stroke-width="2"/>
+    <!-- Yellow large circle -->
+    <circle cx="120" cy="60" r="22" fill="none" stroke="#d9a52a" stroke-width="2.2"/>
+    <!-- Asterisk inside yellow -->
+    <g transform="translate(120, 50)">
+      <line x1="0" y1="-7" x2="0" y2="7" stroke="#1f2024" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="-7" y1="0" x2="7" y2="0" stroke="#1f2024" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="-5" y1="-5" x2="5" y2="5" stroke="#1f2024" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="-5" y1="5" x2="5" y2="-5" stroke="#1f2024" stroke-width="1.5" stroke-linecap="round"/>
+    </g>
+    <!-- Triangle shape -->
+    <path d="M105,95 L135,95 L120,80 Z" fill="none" stroke="#1f2024" stroke-width="1.8"/>
+    <!-- Solid yellow triangle below -->
+    <path d="M110,118 L130,118 L120,103 Z" fill="#d9a52a" opacity="0.6"/>
+    <!-- Blue ball with line -->
+    <circle cx="80" cy="85" r="5" fill="#2854a8"/>
+    <line x1="80" y1="85" x2="105" y2="95" stroke="#2854a8" stroke-width="1.5"/>
+    <!-- Red dot -->
+    <circle cx="160" cy="35" r="4" fill="#c83c20"/>
+    <!-- Small star top right -->
+    <g transform="translate(170, 22)">
+      <line x1="0" y1="-5" x2="0" y2="5" stroke="#c83c20" stroke-width="1.3" stroke-linecap="round"/>
+      <line x1="-5" y1="0" x2="5" y2="0" stroke="#c83c20" stroke-width="1.3" stroke-linecap="round"/>
+    </g>
+  </svg>`;
+}
+
+function tileMark(color){
+  const c = COLOR_VALUES[color] || '#1f2024';
+  return `<svg viewBox="0 0 16 16" width="16" height="16" xmlns="http://www.w3.org/2000/svg">
+    <line x1="8" y1="2" x2="8" y2="14" stroke="${c}" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="2" y1="8" x2="14" y2="8" stroke="${c}" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="4" y1="4" x2="12" y2="12" stroke="${c}" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="4" y1="12" x2="12" y2="4" stroke="${c}" stroke-width="1.5" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function dotMark(color){
+  const c = COLOR_VALUES[color] || '#d9a52a';
+  return `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${c};flex-shrink:0;"></span>`;
+}
+
+function bridgeMark(){
+  return `<svg viewBox="0 0 80 80" width="80" height="80" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="40" cy="40" r="28" fill="none" stroke="#1f2024" stroke-width="1.5" stroke-dasharray="2 4"/>
+    <circle cx="40" cy="12" r="3" fill="#c83c20"/>
+    <circle cx="40" cy="68" r="3" fill="#2854a8"/>
+    <circle cx="12" cy="40" r="3" fill="#d9a52a"/>
+    <circle cx="68" cy="40" r="3" fill="#2d7548"/>
+    <g transform="translate(40,40)">
+      <line x1="0" y1="-8" x2="0" y2="8" stroke="#1f2024" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="-8" y1="0" x2="8" y2="0" stroke="#1f2024" stroke-width="1.5" stroke-linecap="round"/>
+    </g>
+  </svg>`;
+}
+
+function navBar(active){
+  if (screen === 'quiz' || screen === 'onboarding') return '';
+  return `<div class="nav">
+    <div class="nav-logo" onclick="goHome()">
+      <span class="nav-logo-mark">${navMark()}</span>
+      <span>Heridas tempranas</span>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab ${active==='test'?'active':''}" onclick="goHome()">Test</button>
+      <button class="nav-tab ${active==='biblioteca'?'active':''}" onclick="goBiblioteca()">Tipos</button>
+    </div>
+  </div>`;
+}
+
+// ────────────────────────────────────────────────
+// RENDER
+// ────────────────────────────────────────────────
+
+function render(){
+  const app = document.getElementById('app');
+  if (screen === 'intro') renderIntro(app);
+  else if (screen === 'onboarding') renderOnboarding(app);
+  else if (screen === 'quiz') renderQuiz(app);
+  else if (screen === 'bridge') renderBridge(app);
+  else if (screen === 'result') renderResult(app);
+  else if (screen === 'biblioteca') renderBiblioteca(app);
+  else if (screen === 'detail') renderDetail(app);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderIntro(app){
+  app.innerHTML = `
+  ${navBar('test')}
+  <div class="intro">
+    <div class="intro-mark">${introSymbol()}</div>
+    <div class="intro-eyebrow-wrap">
+      <div class="eyebrow"><span class="eyebrow-line"></span>Un mapa, no un diagnóstico<span class="eyebrow-line"></span></div>
+    </div>
+    <h1>Las formas en que <span class="accent">aprendiste</span> a estar.</h1>
+    <p class="intro-subtitle">La mayoría de nosotros crecimos con algunas heridas tempranas. Son las formas sutiles en que un sistema familiar puede haber dejado huella, y conocerlas es entender el origen de gestos, decisiones y lealtades que hoy se sienten automáticos.</p>
+
+    <div class="intro-grid">
+      <div class="intro-tile">
+        <span class="intro-tile-mark">${tileMark('cobalt')}</span>
+        <div class="intro-tile-label">${QUESTIONS.length} preguntas</div>
+        <p>Toma unos 8–10 minutos. Responde lo primero que sientas, antes de la respuesta editada.</p>
+      </div>
+      <div class="intro-tile">
+        <span class="intro-tile-mark">${tileMark('vermillion')}</span>
+        <div class="intro-tile-label">6 tipos</div>
+        <p>Recibirás un perfil con porcentajes, porque cada persona es una constelación de varios tipos en distinta intensidad.</p>
+      </div>
+      <div class="intro-tile">
+        <span class="intro-tile-mark">${tileMark('ochre')}</span>
+        <div class="intro-tile-label">Espejo, no etiqueta</div>
+        <p>Es una herramienta de autoconocimiento. Acompaña al trabajo terapéutico y a tu propio criterio, sin reemplazar ninguno.</p>
+      </div>
+      <div class="intro-tile">
+        <span class="intro-tile-mark">${tileMark('emerald')}</span>
+        <div class="intro-tile-label">Hacia la reparación</div>
+        <p>Al final recibirás una ruta de <em>reparenting</em> basada en los tipos que más resuenen contigo, y no una receta genérica.</p>
+      </div>
+    </div>
+
+    <div class="intro-cta-wrap">
+      <button class="btn-primary" onclick="startOnboarding()">
+        <span class="dot"></span>
+        Comenzar
+      </button>
+      <button class="btn-ghost" onclick="goBiblioteca()">○ Conocer los 6 tipos primero</button>
+    </div>
+  </div>`;
+}
+
+function renderOnboarding(app){
+  const genders = [
+    { key: 'f', label: 'Femenino' },
+    { key: 'm', label: 'Masculino' },
+    { key: 'n', label: 'Neutro / no binarie' },
+    { key: 'n', label: 'Prefiero no decir' }
+  ];
+
+  app.innerHTML = `
+  <div class="onboarding">
+    <div class="onboarding-header">
+      <div class="intro-eyebrow-wrap">
+        <div class="eyebrow"><span class="eyebrow-line"></span>Para empezar<span class="eyebrow-line"></span></div>
+      </div>
+      <h2>Cuéntame algo de ti.</h2>
+      <p>Esto me ayuda a hablarte directamente y a usar las palabras que te quedan bien.</p>
+    </div>
+
+    <div class="onboarding-block">
+      <div class="onboarding-label">¿Cómo te llamas?</div>
+      <input
+        type="text"
+        id="name-input"
+        class="onboarding-input"
+        placeholder="Tu nombre"
+        value="${userName}"
+        oninput="handleNameInput(event)"
+        autocomplete="given-name"
+        spellcheck="false"
+      />
+      <p class="onboarding-note">Solo aparece en este test, no se guarda en ningún lado.</p>
+    </div>
+
+    <div class="onboarding-block">
+      <div class="onboarding-label">¿Cómo prefieres que conjugue?</div>
+      <div class="gender-options">
+        <button class="gender-option ${userGender==='f'?'selected':''}" data-g="f" onclick="setGender('f')">
+          <span class="gender-mark"></span>
+          <span>Femenino <em style="font-style:italic;opacity:0.7;">— cansada, lista, sola</em></span>
+        </button>
+        <button class="gender-option ${userGender==='m'?'selected':''}" data-g="m" onclick="setGender('m')">
+          <span class="gender-mark"></span>
+          <span>Masculino <em style="font-style:italic;opacity:0.7;">— cansado, listo, solo</em></span>
+        </button>
+        <button class="gender-option ${userGender==='n'?'selected':''}" data-g="n" onclick="setGender('n')">
+          <span class="gender-mark"></span>
+          <span>Prefiero no decir <em style="font-style:italic;opacity:0.7;">— uso reformulaciones neutras</em></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="intro-cta-wrap" style="margin-top: 28px;">
+      <button id="onboard-begin" class="btn-primary" ${userGender ? '' : 'disabled'} onclick="beginQuizFromOnboarding()">
+        <span class="dot"></span>
+        Empezar el test
+      </button>
+      <button class="btn-ghost" onclick="go('intro')">← Volver</button>
+    </div>
+  </div>
+  `;
+}
+
+function goPrev(){
+  if (q > 0) {
+    q = q - 1;
+    render();
+  }
+}
+
+function goNext(){
+  if (q < QUESTIONS.length - 1) {
+    q = q + 1;
+    render();
+  }
+}
+
+function renderQuiz(app){
+  const question = QUESTIONS[q];
+  const answeredPct = (answeredCount() / QUESTIONS.length) * 100;
+
+  const dots = QUESTIONS.map((_, idx) => {
+    const cls = answers[idx] !== null ? 'answered' : '';
+    const cur = idx === q ? 'current' : '';
+    return `<button class="qdot ${cls} ${cur}" onclick="jumpToQ(${idx})" aria-label="Ir a pregunta ${idx+1}"></button>`;
+  }).join('');
+
+  const options = LIKERT.map(opt => {
+    const sel = answers[q] === opt.value ? 'selected' : '';
+    return `<button class="likert-option ${sel}" onclick="selectAnswer(${opt.value})">
+      <span class="likert-mark"></span>
+      <span>${opt.label}</span>
+    </button>`;
+  }).join('');
+
+  const prevDisabled = q === 0 ? 'disabled' : '';
+  const nextDisabled = q === QUESTIONS.length - 1 ? 'disabled' : '';
+
+  app.innerHTML = `
+  <div class="quiz">
+    <div class="quiz-header">
+      <div class="quiz-counter">
+        <span class="quiz-counter-num">${String(q+1).padStart(2,'0')}</span>/${QUESTIONS.length}
+      </div>
+      <button class="btn-back" onclick="confirmExit()">← Salir</button>
+    </div>
+
+    <div class="progress-track">
+      <div class="progress-fill" style="width: ${answeredPct}%;"></div>
+    </div>
+
+    <div class="q-block">
+      <p class="q-text">${question.text}</p>
+      <div class="likert">
+        ${options}
+      </div>
+    </div>
+
+    <div class="quiz-prev-next">
+      <button class="btn-step" onclick="goPrev()" ${prevDisabled}>
+        <span class="step-arrow">←</span>
+        <span>Anterior</span>
+      </button>
+      <button class="btn-step" onclick="goNext()" ${nextDisabled}>
+        <span>Siguiente</span>
+        <span class="step-arrow">→</span>
+      </button>
+    </div>
+
+    <div class="quiz-nav">
+      <div class="quiz-nav-dots">
+        ${dots}
+      </div>
+    </div>
+    <p class="quiz-nav-hint">Toca cualquier punto para volver a una pregunta.</p>
+  </div>
+
+  ${showExitModal ? `
+  <div class="modal-overlay" onclick="cancelExit()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <h3>¿Salir del test?</h3>
+      <p>Tus respuestas se perderán y tendrás que volver a empezar.</p>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="cancelExit()">Seguir</button>
+        <button class="btn-primary" onclick="goHome()" style="padding:13px 28px;font-size:10px;"><span class="dot"></span>Salir</button>
+      </div>
+    </div>
+  </div>` : ''}
+  `;
+}
+
+function renderBridge(app){
+  const greeting = userName ? userName + ',' : 'Listo.';
+  app.innerHTML = `
+  ${navBar()}
+  <div class="bridge">
+    <div class="bridge-mark">${bridgeMark()}</div>
+    <h2>${greeting}<br>antes del resultado.</h2>
+    <p class="bridge-text">Acabas de responder ${QUESTIONS.length} preguntas sobre cómo aprendiste a estar en el mundo. Recordar, responder con honestidad, mirar de frente algunas cosas —no es poca cosa.</p>
+    <p class="bridge-text">Lo que sigue es un mapa. Señala caminos por los que tu sistema aprendió a moverse hace tiempo, y que con conciencia pueden empezar a flexibilizarse.</p>
+    <p class="bridge-line">Respira. Hasta acá.</p>
+    <div class="bridge-cta">
+      <button class="btn-primary" onclick="goResult()">
+        <span class="dot"></span>
+        Ver mi mapa
+      </button>
+    </div>
+  </div>`;
+}
+
+// ────────────────────────────────────────────────
+// RESULTADO — secciones extraídas para reuso entre vista capítulos y completa
+// ────────────────────────────────────────────────
+
+function buildBarsHTML(sorted) {
+  return sorted.map(s => {
+    const tipo = TIPOS[s.key];
+    const colorKey = COLORS[s.key];
+    const color = COLOR_VALUES[colorKey];
+    const tierClass = `tier-${s.tier}`;
+    const tierTxt = tierLabel(s.tier);
+    return `<div class="bar-row ${tierClass}">
+      <div class="bar-top">
+        <div class="bar-name-wrap">
+          <span class="bar-name">${tipo.name}</span>
+          <span class="bar-tier">· ${tierTxt}</span>
+        </div>
+        <span class="bar-value">${s.pct}%</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${s.pct}%;background:${color};"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function buildInterpretText(primary) {
+  const namePrefix = userName ? userName + ', ' : '';
+  if (primary.length === 0) {
+    return `${namePrefix}tu perfil aparece bajo en todas las dimensiones. Eso puede leerse de varias maneras: creciste en un entorno suficientemente sostenedor, hay aspectos que aún no has tenido espacio para explorar, o respondiste con una voz interna más cauta de lo habitual. Las tres lecturas son válidas y vale la pena leer las dimensiones más altas con curiosidad.`;
+  } else if (primary.length === 1) {
+    const p = TIPOS[primary[0].key];
+    return `${namePrefix}tu perfil tiene un eje claro: <strong>${p.name.toLowerCase()}</strong>. Es la herida que más estructura tus patrones actuales. Los otros tipos están presentes pero en menor intensidad —son matices, no protagonistas.`;
+  } else if (primary.length === 2) {
+    const p1 = TIPOS[primary[0].key];
+    const p2 = TIPOS[primary[1].key];
+    return `${namePrefix}tu perfil se mueve entre dos ejes principales: <strong>${p1.name.toLowerCase()}</strong> y <strong>${p2.name.toLowerCase()}</strong>. La combinación crea una textura particular —probablemente reconozcas patrones que nacen del cruce, no solo de cada uno por separado.`;
+  } else {
+    return `${namePrefix}tu perfil muestra varios ejes activos. Eso habla de un mapa interno complejo, multifacético. Vale la pena leer cada tipo por separado, y también notar cómo se entrelazan en tu vida cotidiana.`;
+  }
+}
+
+function buildVidaAdultaHTML(tiposToShow) {
+  return tiposToShow.map(s => {
+    const tipo = TIPOS[s.key];
+    const colorKey = COLORS[s.key];
+    return `<div class="tipo-block">
+      <div class="tipo-block-head">
+        <span class="tipo-block-name">${tipo.name}</span>
+        <span class="tipo-block-pct">${s.pct}% · ${tierLabel(s.tier)}</span>
+      </div>
+      <ul class="bullets ${colorKey}">
+        ${tipo.en_la_vida_adulta_resultado.map(b => `<li>${b}</li>`).join('')}
+      </ul>
+    </div>`;
+  }).join('');
+}
+
+function buildCopingHTML(tiposToShow) {
+  return tiposToShow.map(s => {
+    const tipo = TIPOS[s.key];
+    const colorKey = COLORS[s.key];
+    return `<div class="tipo-block">
+      <div class="tipo-block-head">
+        <span class="tipo-block-name">${tipo.name}</span>
+      </div>
+      <div class="coping-paragraph ${colorKey}">
+        ${tipo.coping_paragraph}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function buildFortalezasHTML(tiposToShow) {
+  return tiposToShow.map(s => {
+    const tipo = TIPOS[s.key];
+    return `<div class="tipo-block">
+      <div class="tipo-block-head">
+        <span class="tipo-block-name">${tipo.name}</span>
+      </div>
+      <p class="rsection-text">${tipo.fortalezas}</p>
+    </div>`;
+  }).join('');
+}
+
+function buildReparentingHTML(tiposToShow) {
+  const reparentingTipos = tiposToShow.slice(0, 2);
+  return reparentingTipos.map(s => {
+    const tipo = TIPOS[s.key];
+    const colorKey = COLORS[s.key];
+    const color = COLOR_VALUES[colorKey];
+    const stepsToShow = s.tier === 'primary' ? tipo.reparenting : tipo.reparenting.slice(0, 2);
+    return `<div class="tipo-block">
+      <div class="tipo-block-head">
+        <span class="tipo-block-name">Para: ${tipo.name}</span>
+      </div>
+      ${stepsToShow.map(step => `
+        <div class="reparenting-step" style="border-left-color:${color};">
+          <div class="reparenting-step-num" style="color:${color};">${step.num}</div>
+          <div class="reparenting-step-title">${step.title}</div>
+          <p class="reparenting-step-text">${step.text}</p>
+        </div>
+      `).join('')}
+      <p class="practice-handwritten" style="color:${color};">${tipo.practica}</p>
+      <div class="integration-question">
+        <div class="integration-question-label">${dotMark(colorKey)} Pregunta para integrar</div>
+        <p class="integration-question-text">"${tipo.pregunta}"</p>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Sections individuales para usar en ambas vistas ──
+
+function sectionConstellation(sorted) {
+  const barsHTML = buildBarsHTML(sorted);
+  return `
+    <div class="constellation-result">
+      <div class="constellation-label">${dotMark('cobalt')} Distribución por tipo</div>
+      <div class="bars">${barsHTML}</div>
+      <p class="constellation-help">Los porcentajes están ajustados a tu propia escala de respuestas. Las dimensiones <strong style="color:var(--vermillion);">primarias</strong> (60% o más) estructuran tus patrones actuales. Las <strong style="color:var(--ochre);">secundarias</strong> (35–60%) son matices reales pero no centrales. Las <strong>latentes</strong> (menos de 35%) probablemente no resuenan tanto contigo.</p>
+    </div>`;
+}
+
+function sectionMapa(sorted, primary) {
+  const interpretText = buildInterpretText(primary);
+  const colorKey = COLORS[sorted[0].key];
+  return `
+    <div class="rsection">
+      <div class="rsection-corner" style="border-color:${COLOR_VALUES[colorKey]};"></div>
+      <div class="rsection-label">${dotMark(colorKey)} Cómo leer tu mapa</div>
+      <p class="rsection-text">${interpretText}</p>
+    </div>`;
+}
+
+function sectionVidaAdulta(tiposToShow) {
+  const html = buildVidaAdultaHTML(tiposToShow);
+  return `
+    <div class="rsection">
+      <div class="rsection-corner" style="border-color:${COLOR_VALUES.vermillion};"></div>
+      <div class="rsection-label">${dotMark('vermillion')} Cómo se ve esto en tu vida adulta</div>
+      <p class="rsection-text">Formas concretas en que tus dimensiones más activas suelen aparecer hoy:</p>
+      ${html}
+    </div>`;
+}
+
+function sectionCoping(tiposToShow) {
+  const html = buildCopingHTML(tiposToShow);
+  return `
+    <div class="rsection">
+      <div class="rsection-corner" style="border-color:${COLOR_VALUES.ochre};"></div>
+      <div class="rsection-label">${dotMark('ochre')} Tus mecanismos de afrontamiento</div>
+      <p class="rsection-text">Las estrategias que tu sistema desarrolló para protegerte. Fueron necesarias en su momento; entender de dónde vienen es el primer paso para elegir cuáles seguir usando y cuáles flexibilizar.</p>
+      ${html}
+    </div>`;
+}
+
+function sectionFortalezas(tiposToShow) {
+  const html = buildFortalezasHTML(tiposToShow);
+  return `
+    <div class="rsection">
+      <div class="rsection-corner" style="border-color:${COLOR_VALUES.emerald};"></div>
+      <div class="rsection-label">${dotMark('emerald')} Lo que también nació de aquí</div>
+      <p class="rsection-text">Cada herida construyó también una capacidad. Reconocerlo es honrar lo que aprendiste a hacer bien, sin idealizar el costo:</p>
+      ${html}
+    </div>`;
+}
+
+function sectionReparenting(tiposToShow) {
+  const html = buildReparentingHTML(tiposToShow);
+  return `
+    <div class="rsection">
+      <div class="rsection-corner" style="border-color:${COLOR_VALUES.cobalt};"></div>
+      <div class="rsection-label">${dotMark('cobalt')} Tu ruta de reparenting</div>
+      <p class="rsection-text"><em>Reparenting</em> es darte hoy lo que en su momento no recibiste —en prácticas pequeñas y repetidas, más que en grandes gestos. Es entrenamiento, más que insight. Estos pasos están priorizados según tus dimensiones más activas:</p>
+      ${html}
+    </div>`;
+}
+
+function sectionCierre(sorted) {
+  const topTipo = TIPOS[sorted[0].key];
+  return `
+    <div class="closing-note">
+      <div class="closing-note-label">${dotMark('vermillion')} Para llevarte</div>
+      <p class="closing-question">"${topTipo.pregunta}"</p>
+    </div>`;
+}
+
+// ── Definición de capítulos ──
+
+function getChapters() {
+  const sorted = sortedScores();
+  const primary = sorted.filter(s => s.tier === 'primary');
+  const activeTipos = sorted.filter(s => s.tier === 'primary' || s.tier === 'secondary');
+  const tiposToShow = activeTipos.length > 0 ? activeTipos : sorted.slice(0, 2);
+
+  return [
+    { label: 'Tu constelación', render: () => sectionConstellation(sorted) + sectionMapa(sorted, primary) },
+    { label: 'En tu vida hoy', render: () => sectionVidaAdulta(tiposToShow) },
+    { label: 'Mecanismos', render: () => sectionCoping(tiposToShow) },
+    { label: 'Fortalezas', render: () => sectionFortalezas(tiposToShow) },
+    { label: 'Reparenting', render: () => sectionReparenting(tiposToShow) },
+    { label: 'Para llevarte', render: () => sectionCierre(sorted) }
+  ];
+}
+
+// ── Toggle helpers ──
+
+function setResultView(view) {
+  resultView = view;
+  if (view === 'chapters') currentChapter = 0;
+  render();
+}
+
+function goChapter(idx) {
+  const chapters = getChapters();
+  if (idx >= 0 && idx < chapters.length) {
+    currentChapter = idx;
+    render();
+  }
+}
+
+function chapterPrev() {
+  if (currentChapter > 0) {
+    currentChapter -= 1;
+    render();
+  }
+}
+
+function chapterNext() {
+  const chapters = getChapters();
+  if (currentChapter < chapters.length - 1) {
+    currentChapter += 1;
+    render();
+  }
+}
+
+// ── Render principal ──
+
+function renderResult(app){
+  const sorted = sortedScores();
+
+  // Header común — siempre visible
+  const headerHTML = `
+    <div class="result-header">
+      <div class="result-eyebrow-wrap">
+        <div class="eyebrow"><span class="eyebrow-line"></span>Tu mapa<span class="eyebrow-line"></span></div>
+      </div>
+      ${userName ? `<span class="result-name">para ${userName}</span>` : ''}
+      <h2>Tu constelación de heridas tempranas</h2>
+      <p class="result-subtitle">Esto es lo que tu sistema parece haber aprendido. Es un mapa de tendencias —que pueden cambiar, y que son solo una parte de quién eres.</p>
+    </div>`;
+
+  // Toggle de vista — siempre visible
+  const toggleHTML = `
+    <div class="view-toggle">
+      <button class="toggle-btn ${resultView === 'chapters' ? 'active' : ''}" onclick="setResultView('chapters')">
+        <span class="toggle-icon">◐</span>
+        <span>Por capítulos</span>
+      </button>
+      <button class="toggle-btn ${resultView === 'full' ? 'active' : ''}" onclick="setResultView('full')">
+        <span class="toggle-icon">☰</span>
+        <span>Todo en una página</span>
+      </button>
+    </div>`;
+
+  // CTAs finales — siempre visibles
+  const ctaHTML = `
+    <div class="cta-row">
+      <button class="btn-primary" onclick="goBiblioteca()">
+        <span class="dot"></span>
+        Explorar todos los tipos
+      </button>
+      <button class="btn-ghost" onclick="goHome()">Volver al inicio</button>
+    </div>`;
+
+  if (resultView === 'full') {
+    // ── VISTA COMPLETA (sábana) ──
+    const primary = sorted.filter(s => s.tier === 'primary');
+    const activeTipos = sorted.filter(s => s.tier === 'primary' || s.tier === 'secondary');
+    const tiposToShow = activeTipos.length > 0 ? activeTipos : sorted.slice(0, 2);
+
+    app.innerHTML = `
+    ${navBar()}
+    <div class="result">
+      ${headerHTML}
+      ${toggleHTML}
+      ${sectionConstellation(sorted)}
+      ${sectionMapa(sorted, primary)}
+      ${sectionVidaAdulta(tiposToShow)}
+      ${sectionCoping(tiposToShow)}
+      ${sectionFortalezas(tiposToShow)}
+      ${sectionReparenting(tiposToShow)}
+      ${sectionCierre(sorted)}
+      ${ctaHTML}
+    </div>`;
+  } else {
+    // ── VISTA POR CAPÍTULOS ──
+    const chapters = getChapters();
+    const chapter = chapters[currentChapter];
+    const isFirst = currentChapter === 0;
+    const isLast = currentChapter === chapters.length - 1;
+
+    // Indicador de capítulos clickeable
+    const chapterDots = chapters.map((c, idx) => {
+      const cls = idx === currentChapter ? 'current' : (idx < currentChapter ? 'visited' : '');
+      return `<button class="chapter-dot ${cls}" onclick="goChapter(${idx})" aria-label="Ir a capítulo ${idx + 1}: ${c.label}"></button>`;
+    }).join('');
+
+    const chapterHeader = `
+      <div class="chapter-header">
+        <div class="chapter-counter">
+          <span class="chapter-counter-num">${String(currentChapter + 1).padStart(2,'0')}</span>
+          <span class="chapter-counter-total">/ ${String(chapters.length).padStart(2,'0')}</span>
+          <span class="chapter-counter-sep">·</span>
+          <span class="chapter-counter-label">${chapter.label}</span>
+        </div>
+        <div class="chapter-dots">${chapterDots}</div>
+      </div>`;
+
+    const chapterNav = `
+      <div class="chapter-nav">
+        <button class="btn-step" onclick="chapterPrev()" ${isFirst ? 'disabled' : ''}>
+          <span class="step-arrow">←</span>
+          <span>Anterior</span>
+        </button>
+        <button class="btn-step" onclick="chapterNext()" ${isLast ? 'disabled' : ''}>
+          <span>Siguiente</span>
+          <span class="step-arrow">→</span>
+        </button>
+      </div>`;
+
+    app.innerHTML = `
+    ${navBar()}
+    <div class="result result-chapters">
+      ${headerHTML}
+      ${toggleHTML}
+      ${chapterHeader}
+      <div class="chapter-content" key="ch-${currentChapter}">
+        ${chapter.render()}
+      </div>
+      ${chapterNav}
+      ${isLast ? ctaHTML : ''}
+    </div>`;
+  }
+}
+
+function renderBiblioteca(app){
+  const cards = Object.entries(TIPOS).map(([key, tipo]) => {
+    const colorKey = COLORS[key];
+    const color = COLOR_VALUES[colorKey];
+    return `<div class="tipo-card" onclick="goDetail('${key}')" style="border-top: 4px solid ${color};">
+      <div class="tipo-card-subtitle">${tipo.subtitle}</div>
+      <div class="tipo-card-name">${tipo.name}</div>
+      <p class="tipo-card-preview">${tipo.preview}</p>
+      <span class="tipo-card-arrow">→</span>
+    </div>`;
+  }).join('');
+
+  app.innerHTML = `
+  ${navBar('biblioteca')}
+  <div class="biblioteca">
+    <div class="biblioteca-header">
+      <div class="intro-eyebrow-wrap">
+        <div class="eyebrow"><span class="eyebrow-line"></span>Los 6 tipos<span class="eyebrow-line"></span></div>
+      </div>
+      <h2>Las heridas que aprendemos antes de saber.</h2>
+      <p>Cada tipo es una forma sutil en que un sistema familiar puede haber dejado huella. La mayoría de personas reconocemos algo de varias. Tócalas para explorar.</p>
+    </div>
+
+    <div class="tipo-grid">${cards}</div>
+
+    <div style="margin-top:36px;display:flex;justify-content:center;">
+      <button class="btn-primary" onclick="${userGender ? 'startQuiz()' : 'startOnboarding()'}">
+        <span class="dot"></span>
+        Hacer el test
+      </button>
+    </div>
+  </div>`;
+}
+
+function renderDetail(app){
+  const tipo = TIPOS[detailKey];
+  const colorKey = COLORS[detailKey];
+  const color = COLOR_VALUES[colorKey];
+  const keys = Object.keys(TIPOS);
+  const idx = keys.indexOf(detailKey);
+  const prev = keys[(idx - 1 + keys.length) % keys.length];
+  const next = keys[(idx + 1) % keys.length];
+
+  const reparentingHTML = tipo.reparenting.map(step => `
+    <div class="reparenting-step" style="border-left-color:${color};">
+      <div class="reparenting-step-num" style="color:${color};">${step.num}</div>
+      <div class="reparenting-step-title">${step.title}</div>
+      <p class="reparenting-step-text">${step.text}</p>
+    </div>
+  `).join('');
+
+  app.innerHTML = `
+  ${navBar('biblioteca')}
+  <div class="tipo-detail">
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <button class="btn-back" onclick="goBiblioteca()">← Todos los tipos</button>
+      <div style="display:flex;gap:6px;">
+        <button class="btn-back" onclick="goDetail('${prev}')">← Anterior</button>
+        <button class="btn-back" onclick="goDetail('${next}')">Siguiente →</button>
+      </div>
+    </div>
+
+    <div class="detail-header" style="border-top: 4px solid ${color};">
+      <div class="detail-subtitle">${tipo.subtitle}</div>
+      <h2>${tipo.name}</h2>
+      <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;color:var(--ink-soft);max-width:480px;margin:14px auto 0;line-height:1.5;">${tipo.short}</p>
+    </div>
+
+    <div class="rsection">
+      <div class="rsection-corner" style="border-color:${color};"></div>
+      <div class="rsection-label">${dotMark(colorKey)} La huella</div>
+      <p class="rsection-text">${tipo.descripcion}</p>
+    </div>
+
+    <div class="rsection">
+      <div class="rsection-corner" style="border-color:${color};"></div>
+      <div class="rsection-label">${dotMark(colorKey)} Cómo suele manifestarse</div>
+      <p class="rsection-text">Maneras frecuentes en que esta herida aparece en la vida adulta:</p>
+      <ul class="bullets ${colorKey}">
+        ${tipo.en_la_vida_adulta_libreria.map(b => `<li>${b}</li>`).join('')}
+      </ul>
+    </div>
+
+    <div class="rsection">
+      <div class="rsection-corner" style="border-color:${color};"></div>
+      <div class="rsection-label">${dotMark(colorKey)} Mecanismos de afrontamiento</div>
+      <div class="coping-paragraph ${colorKey}">
+        ${tipo.coping_paragraph}
+      </div>
+    </div>
+
+    <div class="rsection">
+      <div class="rsection-corner" style="border-color:${color};"></div>
+      <div class="rsection-label">${dotMark(colorKey)} Lo que también nació de aquí</div>
+      <p class="rsection-text">${tipo.fortalezas}</p>
+    </div>
+
+    <div class="rsection">
+      <div class="rsection-corner" style="border-color:${color};"></div>
+      <div class="rsection-label">${dotMark(colorKey)} Reparenting</div>
+      <p class="rsection-text">Tres prácticas para empezar a darte lo que en su momento no recibiste:</p>
+      ${reparentingHTML}
+      <p class="practice-handwritten" style="color:${color};">${tipo.practica}</p>
+    </div>
+
+    <div class="integration-question" style="margin-top:18px;">
+      <div class="integration-question-label">${dotMark(colorKey)} Pregunta para integrar</div>
+      <p class="integration-question-text">"${tipo.pregunta}"</p>
+    </div>
+
+    <div class="cta-row">
+      <button class="btn-primary" onclick="${userGender ? 'startQuiz()' : 'startOnboarding()'}">
+        <span class="dot"></span>
+        Hacer el test
+      </button>
+      <button class="btn-ghost" onclick="goBiblioteca()">← Volver a los tipos</button>
+    </div>
+  </div>`;
+}
+
+// Initial render
+render();
+
+</script>
+</body>
+</html>
